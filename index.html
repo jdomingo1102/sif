@@ -4,6 +4,10 @@
 
 <style>
 @import url('https://fonts.googleapis.com/css?family=Montserrat:400,700,900&display=swap');
+body{
+  margin: 0px;
+  padding: 30px;
+}
 *{
   font-family: "Montserrat", sans-serif;
 }
@@ -32,6 +36,23 @@
 .output{
   font-size: 40px;
   font-weight: 700;
+  /* animation: output1 0.5s ease-in-out; */
+  display: inline-block;
+  width: auto;
+}
+@keyframes output1{
+  0%{
+    transform: translateX(calc(-100% - 30px));
+  }
+  50%{
+    transform: translateX(30px);
+  }
+  100%{
+    transform: translateX(0px);
+  }
+}
+.output,.output *{
+  transition: all 0.4s ease-in-out;
 }
 .output div{
   display: inline-block;
@@ -66,6 +87,21 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance:textfield;
 }
+
+h1,p{
+  margin: 0px 0px 10px 0px;
+  padding: 0px;
+}
+p{
+  margin: 0px 0px 30px 0px;
+}
+
+.fraction-minus{
+  position: relative;
+  top: -6px;
+  margin-right: 5px;
+  display: none;
+}
 </style>
 
 <body>
@@ -79,7 +115,7 @@ input[type=number] {
 </div>
 <button class="submit-button">Calculate</button>
 <br><br><br>
-<div class="output">y = <div class="fraction">m</div>x <span class="pm-sign">+</span> <div class="y-intercept">b</div></div>
+<div class="output">y = <span class="fraction-minus">-</span><div class="fraction">m</div>x <span class="pm-sign">+</span> <div class="y-intercept">b</div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 </body>
 
@@ -120,43 +156,55 @@ var FractionReduce = (function(){
 }());
 $(".submit-button").click(calculate);
 function calculate(){
-  var values = {
-    x1: Number($(".coordinate-pair-1 .coordinate-pair-x").val()),
-    x2: Number($(".coordinate-pair-2 .coordinate-pair-x").val()),
-    y1: Number($(".coordinate-pair-1 .coordinate-pair-y").val()),
-    y2: Number($(".coordinate-pair-2 .coordinate-pair-y").val())
-  };
-  if (values.x1 == values.x2 && values.y1 == values.y2) {
-    alert(`The points cannot be in the same spot at (${values.x1}, ${values.y1})! Because you can't make a line from them and therefore cannot calculate slope.`);
-    return;
-  }
-  if (values.x1 == values.x2) {
-    alert(`This is an undefined slope at the x coordinate ${values.x1}. Calculations are not required.`);
-    return;
-  }
-  if (values.y1 == values.y2) {
-    alert(`This is a zero slope at the y coordinate ${values.y1}. Calculations are not required.`);
-    return;
-  }
-  console.log(values);
-  var slope = {num: values.y1 - values.y2, den: values.x1 - values.x2};
-  var reduced = FractionReduce.reduce(slope.num, slope.den);
-  slope = {num: reduced[0], den: reduced[1]};
-  console.log(slope);
-  var b = values.y1 - ((slope.num/slope.den)*values.x1);
-  console.log(b);
-  if (slope.den == 1) {
-    $(".fraction").html(slope.num.toLocaleString());
-    $(".fraction").css("transform", "none");
-  } else {
-    $(".fraction").html(`<span>${slope.num.toLocaleString()}</span><br><span>${slope.den.toLocaleString()}</span>`);
-    $(".fraction").css("transform", "translateY(25%)");
-  }
-  if (b < 0) {
-    $(".pm-sign").html("-");
-  } else {
+    var values = {
+      x1: Number($(".coordinate-pair-1 .coordinate-pair-x").val()),
+      x2: Number($(".coordinate-pair-2 .coordinate-pair-x").val()),
+      y1: Number($(".coordinate-pair-1 .coordinate-pair-y").val()),
+      y2: Number($(".coordinate-pair-2 .coordinate-pair-y").val())
+    };
     $(".pm-sign").html("+");
-  }
-  $(".y-intercept").html(Math.abs(b).toLocaleString());
+    $(".y-intercept").html("b");
+    $(".fraction").html("m");
+    if (values.x1 == values.x2 && values.y1 == values.y2) {
+      alert(`The points cannot be in the same spot at (${values.x1}, ${values.y1})! You can't make one line from them and therefore cannot calculate slope.`);
+      return;
+    }
+    if (values.x1 == values.x2) {
+      alert(`This is an undefined slope at the x coordinate ${values.x1}. Calculations are not required.`);
+      return;
+    }
+    if (values.y1 == values.y2) {
+      alert(`This is a zero slope at the y coordinate ${values.y1}. Calculations are not required.`);
+      return;
+    }
+    console.log(values);
+    var slope = {num: values.y1 - values.y2, den: values.x1 - values.x2};
+    var reduced = FractionReduce.reduce(slope.num, slope.den);
+    slope = {num: reduced[0], den: reduced[1]};
+    console.log(slope);
+    var b = values.y1 - ((slope.num/slope.den)*values.x1);
+    console.log(b);
+    if (slope.den == 1) {
+      $(".fraction").html(slope.num.toLocaleString());
+      $(".fraction").css("transform", "none");
+      $(".output").css("transform", "none");
+      $(".fraction-minus").hide();
+    } else {
+      $(".fraction").html(`<span>${Math.abs(slope.num.toLocaleString())}</span><br><span>${Math.abs(slope.den.toLocaleString())}</span>`);
+      $(".fraction").css("transform", "translateY(25%)");
+      $(".output").css("transform", "translateY(-25%)");
+      if ((slope.num < 0 && slope.den >= 0) || (slope.den < 0 && slope.num >= 0)) {
+        $(".fraction-minus").show();
+      } else {
+        $(".fraction-minus").hide();
+      }
+    }
+    if (b < 0) {
+      $(".pm-sign").html("-");
+    } else {
+      $(".pm-sign").html("+");
+    }
+    $(".y-intercept").html(Math.abs(b).toLocaleString());
+  
 }
 </script>
