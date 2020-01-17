@@ -1,0 +1,162 @@
+<head>
+<title>Slope Intercept Form Calculator</title>
+</head>
+
+<style>
+@import url('https://fonts.googleapis.com/css?family=Montserrat:400,700,900&display=swap');
+*{
+  font-family: "Montserrat", sans-serif;
+}
+.coordinate-pair{
+  position: relative;
+  top: 0px;
+  left: 0px;
+  font-size: 30px;
+  font-weight: 900;
+}
+.coordinate-pair-input{
+  font-size: 30px;
+  font-weight: 900;
+  text-align: center;
+  width: 50px;
+  border: none;
+  outline: none;
+}
+.submit-button{
+  margin-top: 20px;
+  font-size: 20px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.output{
+  font-size: 40px;
+  font-weight: 700;
+}
+.output div{
+  display: inline-block;
+  font-weight: 900;
+}
+.fraction{
+  margin-right: 3px;
+}
+.fraction span:nth-of-type(1){
+  border-bottom: 4px solid #000;
+  width: 100%;
+  text-align: center;
+  display: inline-block;
+}
+.fraction span:nth-of-type(2){
+  position: relative;
+  top: 0px;
+  width: 100%;
+  display: inline-block;
+  text-align: center;
+}
+
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance:textfield;
+}
+</style>
+
+<body>
+<h1>Slope Intercept Form Calculator</h1>
+<p>This page can calculate a slope intercept form equation if given two points.<br>Click on the places below to type in numbers, then press Calculate.</p>
+<div class="coordinate-pair coordinate-pair-1">
+  (<input type="number" placeholder="x1" class="coordinate-pair-input coordinate-pair-x" />,<input type="number" placeholder="y1" class="coordinate-pair-input coordinate-pair-y" />)
+</div>
+<div class="coordinate-pair coordinate-pair-2">
+  (<input type="number" placeholder="x2" class="coordinate-pair-input coordinate-pair-x" />,<input type="number" placeholder="y2" class="coordinate-pair-input coordinate-pair-y" />)
+</div>
+<button class="submit-button">Calculate</button>
+<br><br><br>
+<div class="output">y = <div class="fraction">m</div>x <span class="pm-sign">+</span> <div class="y-intercept">b</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</body>
+
+<script>
+var FractionReduce = (function(){
+    //Euclid's Algorithm
+    var getGCD = function(n, d){
+        var numerator = (n<d)?n:d;
+        var denominator = (n<d)?d:n;        
+        var remainder = numerator;
+        var lastRemainder = numerator;
+
+        while (true){
+            lastRemainder = remainder;
+            remainder = denominator % numerator;
+            if (remainder === 0){
+                break;
+            }
+            denominator = numerator;
+            numerator = remainder;
+        }
+        if(lastRemainder){
+            return lastRemainder;
+        }
+    };
+
+    var reduce = function(n, d){
+        var gcd = getGCD(n, d);
+
+        return [n/gcd, d/gcd];
+    };
+
+    return {
+            getGCD:getGCD,
+            reduce:reduce
+           };
+
+}());
+$(".submit-button").click(calculate);
+function calculate(){
+  var values = {
+    x1: Number($(".coordinate-pair-1 .coordinate-pair-x").val()),
+    x2: Number($(".coordinate-pair-2 .coordinate-pair-x").val()),
+    y1: Number($(".coordinate-pair-1 .coordinate-pair-y").val()),
+    y2: Number($(".coordinate-pair-2 .coordinate-pair-y").val())
+  };
+  if (values.x1 == values.x2 && values.y1 == values.y2) {
+    alert(`The points cannot be in the same spot at (${values.x1}, ${values.y1})! Because you can't make a line from them and therefore cannot calculate slope.`);
+    return;
+  }
+  if (values.x1 == values.x2) {
+    alert(`This is an undefined slope at the x coordinate ${values.x1}. Calculations are not required.`);
+    return;
+  }
+  if (values.y1 == values.y2) {
+    alert(`This is a zero slope at the y coordinate ${values.y1}. Calculations are not required.`);
+    return;
+  }
+  console.log(values);
+  var slope = {num: values.y1 - values.y2, den: values.x1 - values.x2};
+  var reduced = FractionReduce.reduce(slope.num, slope.den);
+  slope = {num: reduced[0], den: reduced[1]};
+  console.log(slope);
+  var b = values.y1 - ((slope.num/slope.den)*values.x1);
+  console.log(b);
+  if (slope.den == 1) {
+    $(".fraction").html(slope.num.toLocaleString());
+    $(".fraction").css("transform", "none");
+  } else {
+    $(".fraction").html(`<span>${slope.num.toLocaleString()}</span><br><span>${slope.den.toLocaleString()}</span>`);
+    $(".fraction").css("transform", "translateY(25%)");
+  }
+  if (b < 0) {
+    $(".pm-sign").html("-");
+  } else {
+    $(".pm-sign").html("+");
+  }
+  $(".y-intercept").html(Math.abs(b).toLocaleString());
+}
+</script>
